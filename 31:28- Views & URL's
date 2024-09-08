@@ -1,1 +1,34 @@
+<studybuds urls.py code>
+from django.contrib import admin
+from django.urls import path, include
 
+
+urlpatterns = [
+    path('admin/', admin.site.urls), 
+    path('', include('base.urls')) 
+]
+
+
+<base urls.py code>
+from django.urls import path
+from . import views 
+
+urlpatterns = [
+    path('', views.home, name="home"),
+    path('room/', views.room, name="room"),
+]
+
+
+<base views.py code>
+from django.shortcuts import render
+from django.http import HttpResponse
+
+# Create your views here.
+
+
+def home(request):
+    return HttpResponse('Home Page')
+
+
+def room(request):
+    return HttpResponse('ROOM')
