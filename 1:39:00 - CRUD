@@ -1,1 +1,113 @@
+<room_form.html>
+{% extends 'main.html' %}
+
+{% block content %}
+
+<div>
+    <form method="POST" action=" ">
+        {% csrf_token %}
+        {{form.as_p}}
+        <input type="submit" value="Submit" />
+    </form>
+</div>
+
+{% endblock content %}
+
+<forms.py>
+from django.forms import ModelForm
+from .models import Room
+
+class RoomForm(ModelForm):
+    class Meta:
+        model = Room
+        fields ='__all__'
+
+<delete.html>
+{% extends 'main.html' %}
+
+{% block content %}
+
+<form method="POST" action="">
+    {% csrf_token %}
+    <p>Are you sure you want to delete "{{obj}}"?</p>
+    
+    <a href="{{request.META.HTTP_REFERER}}">Go Back</a>
+    <input type="submit" value="Confirm" />
+</form>
+
+{% endblock content%}
+
+
+
+<views.py>
+from django.shortcuts import render, redirect
+from .models import Room
+from .forms import RoomForm
+
+# Create your views here.
+
+#rooms = [
+#   {'id': 1, 'name': 'Lets learn python!'},
+#   {'id': 2, 'name': 'Design with me'},
+#  {'id': 3, 'name': 'Frontend developers'},
+#]
+
+
+def home(request):
+    rooms = Room.objects.all()
+    context = {'rooms': rooms}
+    return render(request, 'base/home.html', context)
+
+
+def room(request, pk):
+    room = Room.objects.get(id=pk)
+    context = {'room': room}
+    return render(request, 'base/room.html', context)
+
+def createRoom(request):
+    form = RoomForm()
+
+    if request.method == 'POST':
+        form =RoomForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('home')
+
+    context = {'form': form}
+    return render(request, 'base/room_form.html', context)
+
+def updateRoom(request, pk):
+    room = Room.objects.get(id=pk)
+    form = RoomForm(instance=room)
+
+    if request.method == 'POST':
+        form = RoomForm(request.POST, instance=room)
+        if form.is_valid():
+            form.save()
+            return redirect('home')
+
+    context = {'form': form}
+    return render(request, 'base/room_form.html', context)
+
+def deleteRoom(request,pk):
+    room = Room.objects.get(id=pk)
+    if request.method =='POST':
+        room.delete()
+        return redirect('home')
+    return render(request, 'base/delete.html',{'obj':room})
+
+
+
+
+<urls.py>
+from django.urls import path
+from . import views 
+
+urlpatterns = [
+    path('', views.home, name="home"),
+    path('room/<str:pk>', views.room, name="room"),
+    
+    path('create-room/', views.createRoom, name="create-room"),
+    path('update-room/<str:pk>/', views.updateRoom, name="update-room"),
+    path('delete-room/<str:pk>/', views.deleteRoom, name="delete-room"),
 
